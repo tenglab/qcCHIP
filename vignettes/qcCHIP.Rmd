@@ -1,0 +1,121 @@
+---
+title: "_qcCHIP_ User's Guide"
+author: |
+  | Xiang Liu <xiang.liu@moffitt.org>
+  | Mingxiang Teng <mingxiang.teng@moffitt.org>
+  | Department of Biostatistics and Bioinformatics
+  | Moffit Cancer Center, Tampa, FL, USA
+date: "`r Sys.Date()`"  
+output: 
+  pdf_document: 
+    toc: true
+  #rmarkdown::html_vignette:
+graphics: yes
+vignette: >
+  %\VignetteIndexEntry{qcCHIP user's guide}
+  %\VignettePackage{qcCHIP}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  error = FALSE,
+  warning = FALSE, 
+  message = FALSE,
+  cache = FALSE,
+  comment = "#>",
+  dev="png"
+)
+```
+
+# Introduction
+Clonal hematopoiesis (CH) is a molecular biomarker associated with various adverse outcomes in healthy and disease individuals. Detecting CHs usually involves genomic sequencing of individual blood samples followed by robust bioinformatics data filtering. We report an R package qcCHIP, a bioinformatics pipeline to guide and call CHs by implementing a series of quality control filters and a permutation-based parameter optimization.
+
+# Install package
+
+Install _qcCHIP_ package via _devtools_.
+```{r install}
+library(devtools)
+devtools::install_github("https://github.com/tenglab/qcCHIP.git",force=T)
+```
+
+# Getting Started
+
+Load the package in R.
+
+```{r library}
+library(qcCHIP)
+```
+
+# Preparing Input files
+
+qcCHIP requires an annotated text file with specific column names:
+
+All empty value should be noted as ".".
+
+  1. Chr: chromosome of variant. Exp: chr1, chr2,chrX.
+  1. Start: start posation of variant.
+  1. End: end posation of variant.
+  1. Ref: reference allele.
+  1. Alt: alternative allele.    
+  1. TLOD: TLOD or Qual Info from vcf file. 
+  1. SOR: SOR Info from vcf file. 
+  1. AD_alt: Allelic depths for the alt alleles from vcf file.
+  1. AF: AF or VAF from blood sample vcf file.
+  1. DP: DP from vcf file.
+  1. SAF: SAF info from vcf file.
+  1. SAR: SAR info from vcf file
+  1. SampleID: sample ID or variant.
+  1. Func.refGene: function annotation from refGene.
+  1. ExonicFunc.refGene: exonic function annotation from refGene. (nonsynonymous SNV and synoymous SNV values need to be named as "nonsynonymous SNV" and"synonymous SNV")
+  1. cosmic70: if the variant is exist in cosmic database. (empty value needs to be ".")  
+  1. tumor_AF: optional, AF or VAF from tumor sample vcf file.
+  1. non_cancer_AF_popmax: optional, non cancer AF value from gnomad database.     
+  1. Alt_dpGAP_PopFreq: optional, ALT population frequency from dpGAP databse.
+     
+```{r example_input_format}
+# example input file
+input_path<- system.file("extdata","demo_input.txt",package="qcCHIP")
+in_f <- read.table(input_path,sep="\t",header=T)
+
+# name of each variables
+colnames(in_f)
+
+# value format of each variables
+head(in_f)
+```
+
+# Basic Usage of _qcCHIP_
+
+In this section, we use 
+
+### *Run qcCHIP with change of minimum VAF*
+
+This section demonstrates the usage of _qcCHIP_ when use different setting of minimum VAF. 
+
+```{r qcCHIP_VAF}
+# input file
+input_path<- system.file("extdata","demo_input.txt",package="qcCHIP")
+in_f <- read.table(input_path,sep="\t",header=T)
+
+# create test directory
+out_dir <- paste0(getwd(),"/test")
+summary_1 <- qcCHIP(in_f,out_path = out_dir,metric_min = 0,metric_step = 0.02,metric_max = 0.1)
+
+
+```
+
+### *Run qcCHIP with change of minimum DP*
+
+
+### *Run qcCHIP with change of maximum population percentage*
+
+
+
+# Basic Usage of _CHIPfilter_
+
+
+
+
