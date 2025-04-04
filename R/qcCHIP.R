@@ -273,7 +273,7 @@ qcCHIP <- function(input_df,
           axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
     xlab(unique(plot_tmp$metric_name))+
     ylab("Permutation consistency")+
-    ggtitle("Comparision with whole and sub sample size (average)")
+    ggtitle("Average")
 
   # common in whole sample
   p1 <- ggplot(plot_tmp,aes(x=metric_setting,y=common_whole,color=group_size))+
@@ -286,7 +286,7 @@ qcCHIP <- function(input_df,
           axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
     xlab(unique(plot_tmp$metric_name))+
     ylab("Permutation consistency")+
-    ggtitle("Comparision with whole and sub sample size (whole sample)")
+    ggtitle("Whole-sample")
 
   # common in sub-sample
   p2 <- ggplot(plot_tmp,aes(x=metric_setting,y=common_sub,color=group_size))+
@@ -299,11 +299,12 @@ qcCHIP <- function(input_df,
           axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
     xlab(unique(plot_tmp$metric_name))+
     ylab("Permutation consistency")+
-    ggtitle("Comparision with whole and sub sample size (sub-sample)")
+    ggtitle("Sub-sample")
 
 
   p_out <- ggarrange(p0,p1,p2,common.legend = T)
-
+  p_out <- annotate_figure(p_out, top = text_grob("Comparision of whole-sample and sub-sample",
+                                        color = "red", face = "bold", size = 14))
   pdf(paste0(out_path,"/",permut_metrics,"_compare_summary.pdf"),width = 12,height=8)
   print(p_out)
   dev.off()

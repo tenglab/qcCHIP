@@ -47,6 +47,7 @@ Load the package in R.
 
 ```{r library}
 library(qcCHIP)
+library(GenomicRanges)
 ```
 
 # Preparing Input files
@@ -89,7 +90,7 @@ head(in_f)
 
 # Basic Usage of _qcCHIP_
 
-In this section, we use 
+In this section, we use _qcCHIP_ to test the results of select CHIP candidate with different setting of VAF, DP, or population. The resulting figures and comparision summary file will help user diceide the optimal VAF, DP, or population metric for their dataset. 
 
 ### *Run qcCHIP with change of minimum VAF*
 
@@ -101,21 +102,111 @@ input_path<- system.file("extdata","demo_input.txt",package="qcCHIP")
 in_f <- read.table(input_path,sep="\t",header=T)
 
 # create test directory
-out_dir <- paste0(getwd(),"/test")
-summary_1 <- qcCHIP(in_f,out_path = out_dir,metric_min = 0,metric_step = 0.02,metric_max = 0.1)
+out_dir <- paste0(getwd(),"/vaf_test")
+vaf_permut <- qcCHIP(in_f,out_path = out_dir
+                     ,metric_min = 0,
+                     metric_step = 0.02,
+                     metric_max = 0.1,
+                     core=1,
+                     show_info = F)
 
+# example of comparision summary output
+head(vaf_permut$summary_df)
+
+# permutation consistency plot
+vaf_permut$figs
 
 ```
 
 ### *Run qcCHIP with change of minimum DP*
 
+This section demonstrates the usage of _qcCHIP_ when use different setting of minimum DP. 
+
+
+```{r qcCHIP_DP}
+# input file
+input_path<- system.file("extdata","demo_input.txt",package="qcCHIP")
+in_f <- read.table(input_path,sep="\t",header=T)
+
+# create test directory
+out_dir <- paste0(getwd(),"/DP_test")
+DP_permut <- qcCHIP(in_f,out_path = out_dir,permut_metrics = "DP", 
+                    metric_min = 0,
+                    metric_step = 10,
+                    metric_max = 50,
+                    core=1,
+                    show_info = F)
+
+# example of comparision summary output
+head(DP_permut$summary_df)
+
+# permutation consistency plot
+DP_permut$figs
+
+```
 
 ### *Run qcCHIP with change of maximum population percentage*
 
+This section demonstrates the usage of _qcCHIP_ when use different setting of maximum population percentage. 
+
+```{r qcCHIP_pop}
+# input file
+input_path<- system.file("extdata","demo_input.txt",package="qcCHIP")
+in_f <- read.table(input_path,sep="\t",header=T)
+
+# create test directory
+out_dir <- paste0(getwd(),"/population_test")
+pop_permut <- qcCHIP(in_f,out_path = out_dir,permut_metrics = "population", 
+                    metric_min = 0.05,
+                    metric_step = 0.05,
+                    metric_max = 0.5,
+                    core=1,
+                    show_info = F)
+
+# example of comparision summary output
+head(pop_permut$summary_df)
+
+# permutation consistency plot
+pop_permut$figs
+
+```
 
 
 # Basic Usage of _CHIPfilter_
 
+In this section, we use _CHIPfilter_ to get the result of select CHIP candidate based on variety of selection matrics (detailed in the man page of _CHIPfilter_). The output will be a subset of input file which pass the selection. Users can directly use this function without runing _qcCHIP_. Some features of _CHIPfilter_ are described below.
+
+```{r CHIPfilter}
+# input file
+input_path<- system.file("extdata","demo_input.txt",package="qcCHIP")
+in_f <- read.table(input_path,sep="\t",header=T)
+
+# blacklist region to exclude
+bl_f <- read.table("../inst/extdata/demo_blacklist.bed",sep = "\t",header=F)
+
+# run default setting
+out_1 <- CHIPfilter(in_f)
+
+# change different metrics
+out_2 <- CHIPfilter(in_f,max_percent=0.02,DP_min = 40,VAF_min=0.002,info=F)
+
+# with paired tumor sample
+out_3 <- CHIPfilter(in_f,tumor_sample = T,tumor_VAF_min = 0.02,info=F)
+
+# with gnomad or dpGAP reference file
+out_4 <- CHIPfilter(in_f,gnomad = F,dpGAP = F,info=F)
+
+# with blacklist region
+out_5 <- CHIPfilter(in_f,blacklist_f = bl_f,info=F)
+
+# check the number of chips 
+length(unique(out_1$mut_sample))
+length(unique(out_2$mut_sample))
+length(unique(out_3$mut_sample))
+length(unique(out_4$mut_sample))
+length(unique(out_5$mut_sample))
+
+```
 
 
 
