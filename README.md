@@ -25,7 +25,7 @@ First load qcCHIP,
 ```R
 library(qcCHIP)
 ```
-Then, follow the [**User's Guide**](https://github.com/tenglab/qcCHIP/blob/master/vignettes/qcCHIP.html) 
+Then, follow the [**User's Guide**](https://github.com/tenglab/qcCHIP/blob/main/vignettes/qcCHIP.pdf)
 to load qcCHIP. In the guide, we detail how to query through qcCHIP
 and to visualize SE signatures across cancers.
 
