@@ -304,7 +304,7 @@ qcCHIP <- function(input_df,
 
   p_out <- ggarrange(p0,p1,p2,common.legend = T)
   p_out <- annotate_figure(p_out, top = text_grob("Comparision of whole-sample and sub-sample",
-                                        color = "red", face = "bold", size = 14))
+                                        color = "black", face = "bold", size = 14))
   pdf(paste0(out_path,"/",permut_metrics,"_compare_summary.pdf"),width = 12,height=8)
   print(p_out)
   dev.off()

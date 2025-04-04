@@ -5,17 +5,16 @@ author: |
   | Mingxiang Teng <mingxiang.teng@moffitt.org>
   | Department of Biostatistics and Bioinformatics
   | Moffit Cancer Center, Tampa, FL, USA
-date: "`r Sys.Date()`"  
-output: 
-  pdf_document: 
+date: "`r Sys.Date()`"
+output:
+  html_document:
     toc: true
-  #rmarkdown::html_vignette:
-graphics: yes
-vignette: >
-  %\VignetteIndexEntry{qcCHIP user's guide}
-  %\VignettePackage{qcCHIP}
-  %\VignetteEncoding{UTF-8}
-  %\VignetteEngine{knitr::rmarkdown}
+    df_print: paged
+  pdf_document:
+    toc: true
+graphics: true
+vignette: "%\\VignetteIndexEntry{qcCHIP user's guide} %\\VignettePackage{qcCHIP} %\\VignetteEncoding{UTF-8}
+  %\\VignetteEngine{knitr::rmarkdown}\n"
 ---
 
 ```{r, echo=FALSE, include=FALSE}
@@ -182,7 +181,9 @@ input_path<- system.file("extdata","demo_input.txt",package="qcCHIP")
 in_f <- read.table(input_path,sep="\t",header=T)
 
 # blacklist region to exclude
-bl_f <- read.table("../inst/extdata/demo_blacklist.bed",sep = "\t",header=F)
+bf_path<- system.file("extdata","demo_blacklist.bed",package="qcCHIP")
+
+bl_f <- read.table(bf_path,sep = "\t",header=F)
 
 # run default setting
 out_1 <- CHIPfilter(in_f)
@@ -199,7 +200,7 @@ out_4 <- CHIPfilter(in_f,gnomad = F,dpGAP = F,info=F)
 # with blacklist region
 out_5 <- CHIPfilter(in_f,blacklist_f = bl_f,info=F)
 
-# check the number of chips 
+# check the number of CHIP 
 length(unique(out_1$mut_sample))
 length(unique(out_2$mut_sample))
 length(unique(out_3$mut_sample))
