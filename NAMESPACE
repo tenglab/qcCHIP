@@ -2,8 +2,10 @@
 
 export(CHIPfilter)
 export(qcCHIP)
+export(vcf2input)
 import(GenomicRanges)
 import(data.table)
 import(ggplot2)
 import(ggpubr)
 import(parallel)
+import(vcfR)
