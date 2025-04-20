@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
 ```
 
 # Introduction
-Clonal hematopoiesis (CH) is a molecular biomarker associated with various adverse outcomes in healthy and disease individuals. Detecting CHs usually involves genomic sequencing of individual blood samples followed by robust bioinformatics data filtering. We report an R package qcCHIP, a bioinformatics pipeline to guide and call CHs by implementing a series of quality control filters and a permutation-based parameter optimization.
+Clonal hematopoiesis (CH) is a molecular biomarker associated with various adverse outcomes in healthy and disease individuals. Detecting CHs usually involves genomic sequencing of individual blood samples followed by rigorous bioinformatics data filtering. We report an R package qcCHIP, a bioinformatics pipeline to identify CH from sequencing data by implementing a series of quality control filters and a permutation-based parameter optimization.
 
 # Install package
 
