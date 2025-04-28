@@ -7,11 +7,11 @@ author: |
   | Moffit Cancer Center, Tampa, FL, USA
 date: "`r Sys.Date()`"
 output:
+  pdf_document:
+    toc: true
   html_document:
     toc: true
     df_print: paged
-  pdf_document:
-    toc: true
 graphics: true
 vignette: "%\\VignetteIndexEntry{qcCHIP user's guide} %\\VignettePackage{qcCHIP} %\\VignetteEncoding{UTF-8}
   %\\VignetteEngine{knitr::rmarkdown}\n"
@@ -49,6 +49,9 @@ library(qcCHIP)
 library(GenomicRanges)
 ```
 
+
+
+
 # Preparing Input files
 
 qcCHIP requires an annotated text file with specific column names:
@@ -59,22 +62,27 @@ All empty value should be noted as ".".
   1. Start: start posation of variant.
   1. End: end posation of variant.
   1. Ref: reference allele.
-  1. Alt: alternative allele.    
-  1. TLOD: TLOD or Qual Info from vcf file. 
-  1. SOR: SOR Info from vcf file. 
+  1. Alt: alternative allele.
+  1. TLOD: TLOD or Qual Info from vcf file.
+  1. SOR: SOR Info from vcf file.
   1. AD_alt: Allelic depths for the alt alleles from vcf file.
   1. AF: AF or VAF from blood sample vcf file.
   1. DP: DP from vcf file.
   1. SAF: SAF info from vcf file.
-  1. SAR: SAR info from vcf file
+  1. SAR: SAR info from vcf file.
   1. SampleID: sample ID or variant.
   1. Func.refGene: function annotation from refGene.
   1. ExonicFunc.refGene: exonic function annotation from refGene. (nonsynonymous SNV and synoymous SNV values need to be named as "nonsynonymous SNV" and"synonymous SNV")
-  1. cosmic70: if the variant is exist in cosmic database. (empty value needs to be ".")  
+  1. cosmic70: if the variant is exist in cosmic database. (empty value needs to be ".")
   1. tumor_AF: optional, AF or VAF from tumor sample vcf file.
-  1. non_cancer_AF_popmax: optional, non cancer AF value from gnomad database.     
+  1. non_cancer_AF_popmax: optional, non cancer AF value from gnomad database.    
   1. Alt_dpGAP_PopFreq: optional, ALT population frequency from dpGAP databse.
-     
+
+There are two ways to prepare the input file.
+
+  1. Using in-house converting tool to convert raw VCF or annotated VCF files.
+  1. Manually create the input file with the columns described above.
+
 ```{r example_input_format}
 # example input file
 input_path<- system.file("extdata","demo_input.txt",package="qcCHIP")
@@ -87,6 +95,94 @@ colnames(in_f)
 head(in_f)
 ```
 
+## Using VCF files as input
+
+Tool vcf2input can convert raw or annotated VCF files to the input file that can be used for qcCHIP.
+
+### Raw VCF files
+
+Below are the examples of how to convert raw VCF files to input file.
+
+```{r raw_vcf}
+# Path of vcf files
+raw_vcf_path<- system.file("extdata/raw_vcf",package="qcCHIP")
+
+# Create data.frame of samples
+sample_df <- data.frame(blood=list.files(raw_vcf_path)[! list.files(raw_vcf_path) %in% 
+                                                         grep("*_tumor\\.vcf\\.gz",list.files(raw_vcf_path),value=T)],
+                        tumor=grep("*_tumor\\.vcf\\.gz",list.files(raw_vcf_path),value=T))
+head(sample_df)
+
+# 1. No paired tumor sample and no annotation of other database
+input_1 <- vcf2input(vcf_path = raw_vcf_path,
+                   sample_list=sample_df$blood)
+head(input_1)
+
+# 2. With paired tumor sample and no annotation of other database
+input_2 <- vcf2input(vcf_path = raw_vcf_path,
+                  sample_list=sample_df$blood,
+                  tumor=T,
+                  tumor_path=raw_vcf_path,
+                  tumor_list=sample_df$tumor)
+head(input_2)
+```
+
+Note that, raw vcf files don't have the required information of Func.refGene, ExonicFunc.refGene, and cosmic70 for qcCHIP. Users need to manually adding the corresponding columns to the resulting table converted from raw VCF.
+
+### Annotated VCF files
+
+Currently, qcCHIP can take the following annotation information: 
+  1. Function name, gene name, exonic function, AAchange, and GeneDetail information from refGene database;
+  1. COSMIC info from COSMIC database (e.g. COSMIC70);
+  1. Non cancer AF population max from gnomad database.
+
+Function name, exonic function, and COSMIC are required annotation information for qcCHIP.
+
+```{r annot_vcf}
+# Path of vcf files
+annot_vcf_path<- system.file("extdata/annot_vcf",package="qcCHIP")
+
+# Create data.frame of samples
+sample_df <- data.frame(blood=list.files(annot_vcf_path)[! list.files(annot_vcf_path) %in% 
+                                                      grep("*_tumor\\.hg38_multianno\\.vcf",list.files(annot_vcf_path),value=T)],
+                        tumor=grep("*_tumor\\.hg38_multianno\\.vcf",list.files(annot_vcf_path),value=T))
+head(sample_df)
+
+# example of annotated VCF files
+library(vcfR)
+exp_vcf <- read.vcfR(system.file("extdata/annot_vcf","sample_1.hg38_multianno.vcf",package="qcCHIP"))
+
+# check name of annotation information
+strsplit(head(exp_vcf@fix,n=1)[,8],";")
+
+# Annotated VCF of sample and paired tumor sample. Annotated with refGene, cosmic, and gnomad.
+input_3 <- vcf2input(vcf_path = annot_vcf_path,
+                  sample_list=sample_df$blood,
+                  tumor=T,
+                  tumor_path=annot_vcf_path,
+                  tumor_list=sample_df$tumor,
+                  refGene=T,
+                  refGene_func_name="Func.refGeneWithVer",
+                  refGene_gene_name="Gene.refGeneWithVer",
+                  refGene_Exonicfunc_name="ExonicFunc.refGeneWithVer",
+                  refGene_AAchange_name=NA,
+                  refGene_GeneDetail_name=NA,
+                  cosmic=T,
+                  cosmic_name="cosmic70",
+                  gnomad=T,
+                  gnomad_name="non_cancer_AF_popmax")
+
+head(input_3)
+```
+
+This output table can be directly used to find CH.  
+
+```{r annot_vcf_run}
+# find CH with default metrics
+ch_candidate <- CHIPfilter(input_3,tumor_sample=T)
+head(ch_candidate)
+```
+ 
 # Basic Usage of _qcCHIP_
 
 In this section, we use _qcCHIP_ to test the results of select CHIP candidate with different setting of VAF, DP, or population. The resulting figures and comparision summary file will help user diceide the optimal VAF, DP, or population metric for their dataset. 
