@@ -131,7 +131,8 @@ Note that, raw vcf files don't have the required information of Func.refGene, Ex
 
 ### Annotated VCF files
 
-Currently, qcCHIP can take the following annotation information: 
+Currently, qcCHIP can take the following annotation information.
+
   1. Function name, gene name, exonic function, AAchange, and GeneDetail information from refGene database;
   1. COSMIC info from COSMIC database (e.g. COSMIC70);
   1. Non cancer AF population max from gnomad database.
@@ -175,7 +176,7 @@ input_3 <- vcf2input(vcf_path = annot_vcf_path,
 head(input_3)
 ```
 
-This output table can be directly used to find CH.  
+This output table is the correct format that can be directly used to find CH.  
 
 ```{r annot_vcf_run}
 # find CH with default metrics
