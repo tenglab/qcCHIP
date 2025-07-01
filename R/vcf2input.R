@@ -147,5 +147,40 @@ vcf2input <- function(vcf_path,
   # replace all NA to "."
   out_final[is.na(out_final)] <- "."
 
+  # reformat for annovar
+  get_diff <- function(start,end,s1, s2) {
+    chars1 <- unlist(strsplit(s1, ""))
+    chars2 <- unlist(strsplit(s2, ""))
+
+    if (length(chars1) == length(chars2)) {
+      start <- start
+      end <- end
+      diff1 <- s1
+      diff2 <- s2
+
+    } else if (length(chars1) < length(chars2)) {
+      start <- start
+      end <- end
+      diff1 <- "-"
+      diff2 <- paste0(chars2[(length(chars1)+1):length(chars2)],collapse="")
+    } else if (length(chars1) > length(chars2)) {
+
+      start <- start+length(chars2)
+      end <- end
+      diff1 <- paste0(chars1[(length(chars2)+1):length(chars1)],collapse="")
+      diff2 <- "-"
+
+    }
+    return(c(start,end,diff1, diff2))
+  }
+
+  result_matrix <- mapply(get_diff, out_final$Start, out_final$End,out_final$Ref,out_final$Alt)
+  result_df <- as.data.frame(t(result_matrix), stringsAsFactors = FALSE)
+
+  out_final$Start <- result_df$V1
+  out_final$End <- result_df$V2
+  out_final$Ref <- result_df$V3
+  out_final$Alt <- result_df$V4
+
   return(out_final)
 }
