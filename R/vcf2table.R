@@ -39,14 +39,15 @@ vcf2table <- function(vcf_in,
 
   if (tumor==T) {
     tumor_vcf <- read.vcfR(tumor_in,verbose = F)
-    tumor_df <- data.frame(SampleID_t=colnames(tumor_vcf@gt)[2],
+    tumor_df <- data.frame(SampleID=colnames(vcf@gt)[2],
+                           SampleID_t=colnames(tumor_vcf@gt)[2],
                            Chr=tumor_vcf@fix[,"CHROM"],
                            Start=as.integer(tumor_vcf@fix[,"POS"]),
                            Ref=tumor_vcf@fix[,"REF"],
                            Alt=tumor_vcf@fix[,"ALT"],
                            tumor_AF=extract.gt(tumor_vcf,element="AF",as.numeric = T)[,1])
 
-    out_tmp <- merge(out_tmp,tumor_df,by=c("Chr","Start","Ref","Alt"),all.x=T)
+    out_tmp <- merge(out_tmp,tumor_df,by=c("Chr","Start","Ref","Alt","SampleID"),all.x=T)
   }
 
   # check refGene databse
