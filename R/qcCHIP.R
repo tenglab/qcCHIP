@@ -12,6 +12,10 @@
 #' @param permut_metrics which metric want to permute.
 #'                       VAF: minimum VAF setting;
 #'                       DP: minimum read depth;
+#'                       SOR: maximum SOR value;
+#'                       TLOD: minimum Qual(TLOD) value;
+#'                       SAF_SAR: minimum SAF/SAR value;
+#'                       Alt_AD: minimum ALT AD value;
 #'                       population: maximum percentage of sample size allowed for one variant.
 #' @param permut_n number of permutations.
 #' @param sub_sample_n integers of subset sample groups.
@@ -23,7 +27,7 @@
 #' @param core number of cores used for parallel computing.
 #' @param blacklist_f a bed file contain blacklist regions to exclude.
 #' @param show_info if print processing massage.
-#'
+#' @param generate_plot if generate default plot.
 #' @return
 #' A text file with comparison results of subsample and whole sample will be saved and written to out_path.
 #' A pdf file including 3 permutation consistency plots will be written to out_path.
@@ -78,8 +82,10 @@ qcCHIP <- function(input_df,
                    metric_max=0.1,
                    metric_step=0.05,
                    remove_tmp_dir=T,
+                   tumor_sample=F,
                    core=2,
-                   show_info=T) {
+                   show_info=T,
+                   generate_plot=T) {
 
   ###########
   #create output directors
@@ -122,17 +128,45 @@ qcCHIP <- function(input_df,
       out_tmp <- CHIPfilter(input=input_df,
                                       VAF_min = seting_list[m],
                                       blacklist_f = blacklist_f,
+                            tumor_sample=tumor_sample,
                             info=F)
 
     } else if (permut_metrics=="population") {
       out_tmp <- CHIPfilter(input=input_df,
                                       max_percent = seting_list[m],
                                       blacklist_f = blacklist_f,
+                            tumor_sample=tumor_sample,
                             info=F)
     } else if (permut_metrics=="DP") {
       out_tmp <- CHIPfilter(input=input_df,
                                       DP_min = seting_list[m],
                                       blacklist_f = blacklist_f,
+                            tumor_sample=tumor_sample,
+                            info=F)
+    } else if (permut_metrics=="TLOD") {
+      out_tmp <- CHIPfilter(input=input_df,
+                            Qual_min = seting_list[m],
+                            blacklist_f = blacklist_f,
+                            tumor_sample=tumor_sample,
+                            info=F)
+    } else if (permut_metrics=="SOR") {
+      out_tmp <- CHIPfilter(input=input_df,
+                            SOR_max = seting_list[m],
+                            blacklist_f = blacklist_f,
+                            tumor_sample=tumor_sample,
+                            info=F)
+    } else if (permut_metrics=="SAF_SAR") {
+      out_tmp <- CHIPfilter(input=input_df,
+                            SAF_min = seting_list[m],
+                            SAR_min = seting_list[m],
+                            blacklist_f = blacklist_f,
+                            tumor_sample=tumor_sample,
+                            info=F)
+    } else if (permut_metrics=="Alt_AD") {
+      out_tmp <- CHIPfilter(input=input_df,
+                            Alt_AD_min = seting_list[m],
+                            blacklist_f = blacklist_f,
+                            tumor_sample=tumor_sample,
                             info=F)
     }
 
@@ -189,6 +223,7 @@ qcCHIP <- function(input_df,
                                             VAF_min = seting_list[m],
                                             blacklist_f = blacklist_f,
                                             info=F,
+                                            tumor_sample=tumor_sample,
                                             mc.cores = core))
 
         } else if (permut_metrics=="population") {
@@ -197,6 +232,7 @@ qcCHIP <- function(input_df,
                                             max_percent = seting_list[m],
                                             blacklist_f = blacklist_f,
                                             info=F,
+                                            tumor_sample=tumor_sample,
                                             mc.cores = core))
         } else if (permut_metrics=="DP") {
           out_sub <- do.call(rbind,mclapply(split_list,
@@ -204,6 +240,40 @@ qcCHIP <- function(input_df,
                                             DP_min = seting_list[m],
                                             blacklist_f = blacklist_f,
                                             info=F,
+                                            tumor_sample=tumor_sample,
+                                            mc.cores = core))
+        } else if (permut_metrics=="TLOD") {
+          out_sub <- do.call(rbind,mclapply(split_list,
+                                            CHIPfilter,
+                                            Qual_min = seting_list[m],
+                                            blacklist_f = blacklist_f,
+                                            info=F,
+                                            tumor_sample=tumor_sample,
+                                            mc.cores = core))
+        } else if (permut_metrics=="SOR") {
+          out_sub <- do.call(rbind,mclapply(split_list,
+                                            CHIPfilter,
+                                            SOR_max = seting_list[m],
+                                            blacklist_f = blacklist_f,
+                                            info=F,
+                                            tumor_sample=tumor_sample,
+                                            mc.cores = core))
+        } else if (permut_metrics=="SAF_SAR") {
+          out_sub <- do.call(rbind,mclapply(split_list,
+                                            CHIPfilter,
+                                            SAF_min = seting_list[m],
+                                            SAR_min = seting_list[m],
+                                            blacklist_f = blacklist_f,
+                                            info=F,
+                                            tumor_sample=tumor_sample,
+                                            mc.cores = core))
+        } else if (permut_metrics=="Alt_AD") {
+          out_sub <- do.call(rbind,mclapply(split_list,
+                                            CHIPfilter,
+                                            Alt_AD_min = seting_list[m],
+                                            blacklist_f = blacklist_f,
+                                            info=F,
+                                            tumor_sample=tumor_sample,
                                             mc.cores = core))
         }
 
@@ -252,65 +322,73 @@ qcCHIP <- function(input_df,
     unlink(tmp_dir, recursive = TRUE)
   }
 
+  
+
   ##################
   # plot generation
   ##################
+  if (generate_plot==T) {
+    plot_tmp <- summary_tmp
+    plot_tmp$group_size <- as.factor(plot_tmp$group_size)
+    plot_tmp$average <- (plot_tmp$common_sub+plot_tmp$common_whole)/2
+    
+    plot_mean <- aggregate(.~metric_setting+group_size,plot_tmp[,-c(1,4)],FUN=mean)
+    
+    # average
+    p0 <- ggplot(plot_tmp,aes(x=metric_setting,y=average,color=group_size))+
+      geom_point(data=plot_mean,aes(x=metric_setting,y=average,color=group_size),
+                 size=1)+
+      geom_smooth(se=T)+
+      #geom_line()+
+      theme_bw()+
+      theme(strip.text = element_text(size=15),
+            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+      xlab(unique(plot_tmp$metric_name))+
+      ylab("Permutation consistency")+
+      ggtitle("Average")
+    
+    # common in whole sample
+    p1 <- ggplot(plot_tmp,aes(x=metric_setting,y=common_whole,color=group_size))+
+      geom_point(data=plot_mean,aes(x=metric_setting,y=common_whole,color=group_size),
+                 size=1)+
+      geom_smooth()+
+      #geom_line()+
+      theme_bw()+
+      theme(strip.text = element_text(size=15),
+            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+      xlab(unique(plot_tmp$metric_name))+
+      ylab("Permutation consistency")+
+      ggtitle("Whole-sample")
+    
+    # common in sub-sample
+    p2 <- ggplot(plot_tmp,aes(x=metric_setting,y=common_sub,color=group_size))+
+      geom_point(data=plot_mean,aes(x=metric_setting,y=common_sub,color=group_size),
+                 size=1)+
+      geom_smooth()+
+      #geom_line()+
+      theme_bw()+
+      theme(strip.text = element_text(size=15),
+            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+      xlab(unique(plot_tmp$metric_name))+
+      ylab("Permutation consistency")+
+      ggtitle("Sub-sample")
+    
+    
+    p_out <- ggarrange(p0,p1,p2,common.legend = T)
+    p_out <- annotate_figure(p_out, top = text_grob("Comparision of whole-sample and sub-sample",
+                                                    color = "black", face = "bold", size = 14))
+    pdf(paste0(out_path,"/",permut_metrics,"_compare_summary.pdf"),width = 12,height=8)
+    print(p_out)
+    dev.off()
+    
+    out_list <- list(summary_df=summary_tmp,
+                     figs=p_out)
+  } else {
+    out_list <- list(summary_df=summary_tmp,
+                     figs=NULL)
+  }
+  
 
-  plot_tmp <- summary_tmp
-  plot_tmp$group_size <- as.factor(plot_tmp$group_size)
-  plot_tmp$average <- (plot_tmp$common_sub+plot_tmp$common_whole)/2
-
-  plot_mean <- aggregate(.~metric_setting+group_size,plot_tmp[,-c(1,4)],FUN=mean)
-
-  # average
-  p0 <- ggplot(plot_tmp,aes(x=metric_setting,y=average,color=group_size))+
-    geom_point(data=plot_mean,aes(x=metric_setting,y=average,color=group_size),
-               size=1)+
-    geom_smooth(se=T)+
-    #geom_line()+
-    theme_bw()+
-    theme(strip.text = element_text(size=15),
-          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-    xlab(unique(plot_tmp$metric_name))+
-    ylab("Permutation consistency")+
-    ggtitle("Average")
-
-  # common in whole sample
-  p1 <- ggplot(plot_tmp,aes(x=metric_setting,y=common_whole,color=group_size))+
-    geom_point(data=plot_mean,aes(x=metric_setting,y=common_whole,color=group_size),
-               size=1)+
-    geom_smooth()+
-    #geom_line()+
-    theme_bw()+
-    theme(strip.text = element_text(size=15),
-          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-    xlab(unique(plot_tmp$metric_name))+
-    ylab("Permutation consistency")+
-    ggtitle("Whole-sample")
-
-  # common in sub-sample
-  p2 <- ggplot(plot_tmp,aes(x=metric_setting,y=common_sub,color=group_size))+
-    geom_point(data=plot_mean,aes(x=metric_setting,y=common_sub,color=group_size),
-               size=1)+
-    geom_smooth()+
-    #geom_line()+
-    theme_bw()+
-    theme(strip.text = element_text(size=15),
-          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-    xlab(unique(plot_tmp$metric_name))+
-    ylab("Permutation consistency")+
-    ggtitle("Sub-sample")
-
-
-  p_out <- ggarrange(p0,p1,p2,common.legend = T)
-  p_out <- annotate_figure(p_out, top = text_grob("Comparision of whole-sample and sub-sample",
-                                        color = "black", face = "bold", size = 14))
-  pdf(paste0(out_path,"/",permut_metrics,"_compare_summary.pdf"),width = 12,height=8)
-  print(p_out)
-  dev.off()
-
-  out_list <- list(summary_df=summary_tmp,
-                   figs=p_out)
   return(out_list)
 
 
