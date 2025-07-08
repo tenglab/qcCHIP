@@ -87,7 +87,7 @@ vcf2table <- function(vcf_in,
     out_tmp$Alt_dpGAP_PopFreq <- extract.info(vcf,element=dpGAP_name,as.numeric = T)
   }
 
-
+  out_tmp <- out_tmp[,c(2:6,1,7:ncol(out_tmp))]
   return(out_tmp)
 
 }
