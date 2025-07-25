@@ -13,9 +13,7 @@
 #'                       VAF: minimum VAF setting;
 #'                       DP: minimum read depth;
 #'                       SOR: maximum SOR value;
-#'                       TLOD: minimum Qual(TLOD) value;
 #'                       SAF_SAR: minimum SAF/SAR value;
-#'                       Alt_AD: minimum ALT AD value;
 #'                       population: maximum percentage of sample size allowed for one variant.
 #' @param permut_n number of permutations.
 #' @param sub_sample_n integers of subset sample groups.
@@ -143,12 +141,6 @@ qcCHIP <- function(input_df,
                                       blacklist_f = blacklist_f,
                             tumor_sample=tumor_sample,
                             info=F)
-    } else if (permut_metrics=="TLOD") {
-      out_tmp <- CHIPfilter(input=input_df,
-                            Qual_min = seting_list[m],
-                            blacklist_f = blacklist_f,
-                            tumor_sample=tumor_sample,
-                            info=F)
     } else if (permut_metrics=="SOR") {
       out_tmp <- CHIPfilter(input=input_df,
                             SOR_max = seting_list[m],
@@ -162,13 +154,7 @@ qcCHIP <- function(input_df,
                             blacklist_f = blacklist_f,
                             tumor_sample=tumor_sample,
                             info=F)
-    } else if (permut_metrics=="Alt_AD") {
-      out_tmp <- CHIPfilter(input=input_df,
-                            Alt_AD_min = seting_list[m],
-                            blacklist_f = blacklist_f,
-                            tumor_sample=tumor_sample,
-                            info=F)
-    }
+    } 
 
     write.table(out_tmp,out_name,sep="\t",quote=F,row.names=F)
 
@@ -242,14 +228,6 @@ qcCHIP <- function(input_df,
                                             info=F,
                                             tumor_sample=tumor_sample,
                                             mc.cores = core))
-        } else if (permut_metrics=="TLOD") {
-          out_sub <- do.call(rbind,mclapply(split_list,
-                                            CHIPfilter,
-                                            Qual_min = seting_list[m],
-                                            blacklist_f = blacklist_f,
-                                            info=F,
-                                            tumor_sample=tumor_sample,
-                                            mc.cores = core))
         } else if (permut_metrics=="SOR") {
           out_sub <- do.call(rbind,mclapply(split_list,
                                             CHIPfilter,
@@ -267,15 +245,7 @@ qcCHIP <- function(input_df,
                                             info=F,
                                             tumor_sample=tumor_sample,
                                             mc.cores = core))
-        } else if (permut_metrics=="Alt_AD") {
-          out_sub <- do.call(rbind,mclapply(split_list,
-                                            CHIPfilter,
-                                            Alt_AD_min = seting_list[m],
-                                            blacklist_f = blacklist_f,
-                                            info=F,
-                                            tumor_sample=tumor_sample,
-                                            mc.cores = core))
-        }
+        } 
 
         write.table(out_sub,sub_out_name,sep="\t",quote=F,row.names=F)
 
