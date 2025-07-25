@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/960167508.svg)](https://doi.org/10.5281/zenodo.16421861)
 
-A package of helping user select optimal VAF, DP, and population metrics based on a permutation approach. It also provide a function to extract CHIP candidates based on variety of metrics.
+A package of helping user select optimal VAF, DP, population metrics, SOR, and SAF/SAR based on a permutation approach. It also provide a function to extract CHIP candidates based on variety of metrics.
 
 ## Installation
 
