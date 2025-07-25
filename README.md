@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/960167508.svg)](https://doi.org/10.5281/zenodo.16421861)
 
-A package of helping user select optimal VAF, DP, population metrics, SOR, and SAF/SAR based on a permutation approach. It also provide a function to extract CHIP candidates based on variety of metrics.
+A package to perform quality filtering of clonal hematopoiesis (CH) mutations using cohort-specific characteristics. Four types of filtering metrics are implemented: technical metrics, functional metrics, individual metrics and population metrics. It also allows users to determine the optimal values of the following numerical metrics based on permutation analysis: VAF, DP, mutation prevalence, SOR, and SAF/SAR. 
 
 ## Installation
 
@@ -28,8 +28,8 @@ First load qcCHIP,
 library(qcCHIP)
 ```
 Then, follow the [**User's Guide**](https://github.com/tenglab/qcCHIP/blob/main/vignettes/qcCHIP.pdf)
-to load qcCHIP. In the guide, we detail how to query through qcCHIP
-and to visualize SE signatures across cancers.
+to load qcCHIP. In the guide, we detail how to use qcCHIP functions to determine values of filtering metrics and to filter CH
+mutations with the four types of metrics.
 
 The users are also encouraged to refer to the help pages of R functions in this package. 
 
