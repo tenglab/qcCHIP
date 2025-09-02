@@ -1,6 +1,6 @@
 # qcCHIP
 
-[![DOI](https://zenodo.org/badge/960167508.svg)](https://doi.org/10.5281/zenodo.16421861)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17037970.svg)](https://doi.org/10.5281/zenodo.17037970)
 
 A package to perform quality filtering of clonal hematopoiesis (CH) mutations using cohort-specific characteristics. Four types of filtering metrics are implemented: technical metrics, functional metrics, individual metrics and population metrics. It also allows users to determine the optimal values of the following numerical metrics based on permutation analysis: VAF, DP, mutation prevalence, SOR, and SAF/SAR. 
 
