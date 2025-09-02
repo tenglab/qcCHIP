@@ -212,7 +212,7 @@ larger SOR means higher strand bias and lower reliability of mutation calls.
 In our manuscript, we demonstrated that the infection points of permutation consistency 
 curves indicate the best parameter cut-offs. In practice, users should determine the 
 infection points of permutation consistency curves: 1) with the 
-increase of consistency stratified by VAF, DP, SAF/SAR and cohort mutation prevalence; 
+increase of consistency stratified by VAF, DP, SAF/SAR or cohort mutation prevalence; 
 2) with the decrease of consistency stratified by SOR. In addition, users are suggested to 
 take full consideration across consistency, precision and recall curves to determine 
 the best parameter cutoffs.  
