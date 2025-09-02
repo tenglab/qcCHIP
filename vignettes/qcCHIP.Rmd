@@ -33,9 +33,15 @@ knitr::opts_chunk$set(
 Clonal hematopoiesis (CH) is a molecular biomarker associated with various 
 adverse outcomes in healthy and disease individuals. Detecting CHs usually 
 involves genomic sequencing of individual blood samples followed by rigorous 
-bioinformatics data filtering. We report an R package qcCHIP, a bioinformatics 
+bioinformatics data filtering. We report an R package, qcCHIP, a bioinformatics 
 pipeline to identify CH from sequencing data by implementing a series of quality
 control filters and permutation-based parameter optimization.
+
+qcCHIP takes inputs in VCF format and filter CH mutations using technical, 
+functional, individual and populations metrics associated to the mutations. 
+It allows customized parameter settings of those metrics as well as parameter 
+optimization using permutation analysis with cohort-specific characteristics. 
+For more detail, please refer to our manuscript and the help pages of R functions. 
 
 # Install package
 
@@ -53,8 +59,6 @@ Load the package in R.
 library(qcCHIP)
 library(GenomicRanges)
 ```
-
-
 
 
 # Preparing Input Files
@@ -105,7 +109,7 @@ head(in_f)
 
 
 The function _vcf2input_ can convert raw or annotated VCF files into an input 
-merged file for the main functions of qcCHIP. However, as raw VCF files don't contain
+merged file for the main functions of qcCHIP. For raw VCF files, as they don't contain
 the required information of _Func.refGene_, _ExonicFunc.refGene_, and _cosmic70_, 
 converting with raw VCF files require users to manually add the corresponding columns 
 to the merged file.
@@ -200,9 +204,22 @@ head(ch_candidate)
 # Basic Usage of The _qcCHIP_ Function
 
 In this section, we use _qcCHIP_ function to perform permutation and evaluate the
-effects of parameter cutoff values. We demo based on three parameters: VAF, DP, and
-mutation prevalence. A series of figures and summary will be generated to help 
-user decide the optimal parameter values, which will be used to identify CHs in the next section. 
+effects of parameter cutoff values. Currently, _qcCHIP_ function supports optimization 
+for five metrics: VAF, DP, SOR, SAF/SAR and cohort mutation prevalence. As demonstrated
+in our manuscript, permutation consistency usually increases with higher parameter 
+values with the exception that larger SOR decreases consistency. This is because that 
+larger SOR means higher strand bias and lower reliability of mutation calls. 
+In our manuscript, we demonstrated that the infection points of permutation consistency 
+curves indicate the best parameter cut-offs. In practice, users should determine the 
+infection points of permutation consistency curves: 1) with the 
+increase of consistency stratified by VAF, DP, SAF/SAR and cohort mutation prevalence; 
+2) with the decrease of consistency stratified by SOR. In addition, users are suggested to 
+take full consideration across consistency, precision and recall curves to determine 
+the best parameter cutoffs.  
+ 
+Below we demo the permutation analysis and generate figures and summary for three parameters: 
+VAF, DP, and cohort mutation prevalence. The figures and summary are used for determination of 
+optimal parameter cutoffs used in the next section. 
 
 ### Run _qcCHIP_ with different VAF cutoffs 
 
@@ -298,9 +315,9 @@ pop_permut$figs
 
 Finally, we use _CHIPfilter_ to filter CH candidates based on a variety of quality 
 metrics (detailed in the man page of _CHIPfilter_). The output will be a subset 
-of input file which pass the filtering. It is recommended that users first run 
-_qcCHIP_ function to determine optimal metric values. However, users can also 
-pick their own metric values and directly apply this function to identify CHs. 
+of input file which pass the QC filtering. It is recommended that users first run 
+_qcCHIP_ function to determine optimal metric values. Nevertheless, users can  
+pick their customized metric values and directly apply this function for CH filtering. 
 Some features of _CHIPfilter_ are described below.
 
 ```{r CHIPfilter}
